@@ -25,6 +25,10 @@ EDGAR_USER_AGENT = {
 SEC_MASTER_URL = """https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{quarter}/master.idx"""     # dl_idx.py
 # SEC_MASTER_URL.format(year=2024, quarter=3)
 
+# URL template for SEC filings, where filename has the format CIK/
+SEC_FILINGS_URL = """https://www.sec.gov/Archives/{filename}"""                                         # dl.py
+# SEC_FILINGS_URL.format(filename="edgar/data/1000694/0000093751-24-000650.txt")
+
 # SEC's EDGAR system prohibits http requests greater than 10 requests-per-second
 SEC_RATE_LIMIT = 10
 

@@ -1,51 +1,78 @@
-#!/usr/bin/python
-import argparse
-import csv
-import os
-from pathlib import Path
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import pandas as pd
+import time
+import csv
+from pathlib import Path
 import requests
 
+
+from main_parameters import(
+    EDGAR_USER_AGENT,
+    SEC_FILINGS_URL,
+    FILING_TYPES, FILINGS_DIRECTORIES,
+    FILTERED_INDEX_FILE,
+)
+
+
+def download_indexed_filing_types():
+
+    for idx, filing_type in enumerate(FILING_TYPES):
+
+        BASE_DIRECTORY = Path(FILINGS_DIRECTORIES[idx])
+
+        to_dl = []
+        # Read MASTER INDEX FILE (choose formatted or filtered)
+        with FILTERED_INDEX_FILE.open(mode="r") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if filing_type in row["form"]:
+                    to_dl.append(row)
+
+        len_ = len(to_dl)
+        print(len_)
+        print("Begin download of SEC filings...")
+
+        # simple time-checks to respect the SEC's required rate-limit of 10 requests per second
+        last_check_time = time.time()
+
+        for n, row in enumerate(to_dl):
+            print(f"{n} out of {len_}")
+
+            cik = row["cik"].strip()
+            date = row["date"].strip()
+            year = row["date"].split("-")[0].strip()
+            month = row["date"].split("-")[1].strip()
+            filename = row["filename"].strip()
+            accession = filename.split(".")[0].split("-")[-1]      # accession number -> unique document identifier...
+
+            # Create download folder
+            DOWNLOAD_DIRECTORY = BASE_DIRECTORY / f"{year}_{month}"
+            DOWNLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
+            DOWNLOAD_FILE = DOWNLOAD_DIRECTORY / f"{cik}_{date}_{accession}.txt"
+
+            if DOWNLOAD_FILE.exists():
+                continue
+
+            try:
+                current_time = time.time()
+
+                while (current_time - last_check_time) < 0.1:
+                    current_time = time.time()
+                    pass
+
+                txt = requests.get(
+                    SEC_FILINGS_URL.format(filename=filename), headers=EDGAR_USER_AGENT, timeout=3.0
+                ).text
+
+                last_check_time = time.time()
+
+                with DOWNLOAD_FILE.open(mode="w", errors="ignore") as file:
+                    file.write(txt)
+            except:
+                print(f"{cik}, {date} failed to download")
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("filing", type=str)
-    parser.add_argument("folder", type=str)
-
-    user_agent = {"User-agent": "Mozilla/5.0"}
-
-    args = parser.parse_args()
-    filing = args.filing
-    folder = args.folder
-
-    to_dl = []
-    with open("full_index.csv", "r") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if filing in row["form"]:
-                to_dl.append(row)
-
-    len_ = len(to_dl)
-    print(len_)
-    print("start to download")
-
-    for n, row in enumerate(to_dl):
-        print(f"{n} out of {len_}")
-        cik = row["cik"].strip()
-        date = row["date"].strip()
-        year = row["date"].split("-")[0].strip()
-        month = row["date"].split("-")[1].strip()
-        url = row["url"].strip()
-        accession = url.split(".")[0].split("-")[-1]
-        Path(f"./{folder}/{year}_{month}").mkdir(parents=True, exist_ok=True)
-        file_path = f"./{folder}/{year}_{month}/{cik}_{date}_{accession}.txt"
-        if os.path.exists(file_path):
-            continue
-        try:
-            txt = requests.get(
-                f"https://www.sec.gov/Archives/{url}", headers=user_agent, timeout=60
-            ).text
-            with open(file_path, "w", errors="ignore") as f:
-                f.write(txt)
-        except:
-            print(f"{cik}, {date} failed to download")
+    download_indexed_filing_types()
