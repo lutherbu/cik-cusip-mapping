@@ -1,30 +1,21 @@
-import argparse
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import csv
-import re
-import sys
 from collections import *
-from glob import glob
 from multiprocessing import Pool
-from pathlib import Path
 
-parser = argparse.ArgumentParser()
-parser.add_argument('files')
-parser.add_argument('--debug', action='store_true')
-
-args = parser.parse_args()
-
-cleanhtml = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
-
-pat = re.compile(
-    '[\( >]*[0-9A-Z]{1}[0-9]{3}[0-9A-Za-z]{2}[- ]*[0-9]{0,2}[- ]*[0-9]{0,1}[\) \n<]*'
+from main_parameters import(
+    FILING_TYPES,
+    DATA_DIRECTORY,
+    html_tag_rx, html_junk_rx, cusip_rx, wordchar_rx,
 )
-w = re.compile('\w+')
 
 
-def parse(file):
-    with open(file, 'r') as f:
-        raw = f.read().replace("<DOCUMENT>", "***starter***")
-        lines = cleanhtml.sub('\n', raw).split('\n')
+def parse_filing_type(file):
+    with file.open('r') as f:
+        raw = f.read().replace("<DOCUMENT>", "***BEGIN SEARCH HERE***")
+        lines = html_tag_rx.sub('\n', raw).split('\n')
 
     record = 0
     cik = None
@@ -37,47 +28,45 @@ def parse(file):
 
     cusips = []
     record = 0
-    html_junk = re.compile(r'''["].*["]|=#.*\d+''')
     for line in lines:
-        if '***starter***' in line:  # lines are after the document preamble
-            print('****************************************')
+
+        if '***BEGIN SEARCH HERE***' in line:  # lines are after the document preamble
             record = 1
+
         if record == 1:
-            line = html_junk.sub('', line)
-            line = cleanhtml.sub('', line)
+            line = html_junk_rx.sub('', line)
+            line = html_tag_rx.sub('', line)
+
             if 'IRS' not in line and 'I.R.S' not in line:
-                fd = pat.findall(line)
+                fd = cusip_rx.findall(line)
+
                 if fd:
-                    if args.debug:
-                        print(f'FOUND: {fd} from {line}')
                     cusip = fd[0].strip().strip('<>')
                     cusips.append(cusip)
+
     if len(cusips) == 0:
         cusip = None
     else:
         cusip = Counter(cusips).most_common()[0][0]
-        cusip = ''.join(w.findall(cusip))
-    if args.debug:
-        print(cusip)
+        cusip = ''.join(wordchar_rx.findall(cusip))
 
-    return [file, cik, cusip]
+    return [file.name, cik, cusip]
 
 
-def main():
-    if args.debug:
-        path = Path(args.files)
-        if path.exists():
-            print(parse(args.files))
-        else:
-            raise ValueError("provide a single file to debug ...")
-        return
+def parse_filings_type_list():
 
-    with Pool(30) as p:
-        with open(args.files + '.csv', 'w') as w:
-            wr = csv.writer(w)
-            for res in p.imap(parse, glob(args.files + '/*/*'), chunksize=100):
-                wr.writerow(res)
+    for filing_type in FILING_TYPES:
+        output_file = DATA_DIRECTORY / f"{filing_type}-cik-cusip.csv"           # intermediate mappings by filing type
+
+        # Get filepaths of downloaded filings
+        filings_list = DATA_DIRECTORY.glob(f"{filing_type}_filings/*/*.txt")
+
+        with Pool(30) as p:
+            with output_file.open('w') as w:
+                wr = csv.writer(w)
+                for res in p.imap(parse_filing_type, filings_list, chunksize=100):
+                    wr.writerow(res)
 
 
 if __name__ == '__main__':
-    main()
+    parse_filings_type_list()

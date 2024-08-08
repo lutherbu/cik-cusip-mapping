@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
+import re
 
 #########################
 #### USER PARAMETERS ####
@@ -29,8 +30,17 @@ SEC_MASTER_URL = """https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{qua
 SEC_FILINGS_URL = """https://www.sec.gov/Archives/{filename}"""                                         # dl.py
 # SEC_FILINGS_URL.format(filename="edgar/data/1000694/0000093751-24-000650.txt")
 
-# SEC's EDGAR system prohibits http requests greater than 10 requests-per-second
+# SEC's EDGAR system prohibits http requests faster than 10-per-second
 SEC_RATE_LIMIT = 10
+
+#####################################
+#### DATA PROCESSING INFORMATION ####
+#####################################
+# Define helper RegEx patterns
+html_tag_rx     = re.compile(r'<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+html_junk_rx    = re.compile(r'''["].*["]|=#.*\d+''')
+wordchar_rx     = re.compile(r'\w+')
+cusip_rx        = re.compile(r'[\( >]*[0-9A-Z]{1}[0-9]{3}[0-9A-Za-z]{2}[- ]*[0-9]{0,2}[- ]*[0-9]{0,1}[\) \n<]*')
 
 #################################
 #### DESTINATION INFORMATION ####
