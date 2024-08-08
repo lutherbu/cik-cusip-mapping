@@ -47,4 +47,3 @@ Aims to streamline original project: to download, parse, and process SEC filings
 
 MIT License
 Copyright (c) [2024] [@flatly1140]
-
