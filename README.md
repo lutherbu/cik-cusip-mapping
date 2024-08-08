@@ -1,32 +1,50 @@
-# cik-cusip mapping
-
-*** If you just want the mapping, download cik-cusip-maps.csv ***
+# cik-cusip-mapping
+Forked from [leoliu0/cik-cusip-mapping](https://github.com/leoliu0/cik-cusip-mapping), with originally stated purpose:
 
 This repository produces the link between cik and cusip using EDGAR 13D and 13G fillings, that is more robust than Compustat (due to backward filling of new cusip to old records). It is a competitor to WRDS SEC platform while this one is free.
 
-This is written in python36+, I don't provide a requirement file and I only use very common libraries, if you run into Module not Found problem, just pip install them, e.g. Pandas
+# This project...
+Aims to streamline original project: to download, parse, and process SEC filings archives to extract CIK-CUSIP mappings.
 
-dl_idx.py will download the EDGAR index file containing addresses for each filing, i.e. full_index.csv is generated
+## Modules
 
-```
-python dl_idx.py
-```
+#### `main_parameters.py`
+- Defines global configuration settings
 
-dl.py will download a certain type of filing, check form_type.txt for available filing types. for example,
-```python
-python dl.py 13G 13G # this will download all 13G (second 13G) filing into 13G (first 13G) folder
-```
-```python
-python parse_cusip.py 13G # this will process all files in 13G directory, creating a file called 13G.csv with filing name, cik, cusip number.
-```
-Finally, you can clean the resulting csv files and get the mapping
-```python
-python post_proc.py 13G.csv 13D.csv
-# This will process both 13G.csv and 13D.csv and generate the mapping file
-```
+#### `main.py`
+- Entry point for program execution
+- Orchestrates workflow across modules
 
-If you do not care obtaining the original data, just download cik-cusip-maps.csv, it has the mapping without timestamp information, but should be good if you use it for merging databases. Please deal with duplications yourself.
+#### `dl_idx.py`
+- Downloads _reference data_ (SEC's master index archive) to archived SEC filing documents
 
-The reason why I do not provide timestamp is because there will be truncations due to timing of the filings. For example, when filings are filed in 2005 and 2007 for a link, I can only see the link in 2005 and 2007, but the link should be valid in 2006 too. One way to fix this is to interpolate the link to 2006. However, when filing ends in 2006, we do not know when should the link is valid to and how long after we should extrapolate, i.e. One could extrapolate to 2020 but we do not know the true date the link ends. This is arbitrary choice of the user, therefore I remove the timestamp for you to deal with yourself. For database merging purpose, this should be fine because two databases you are merging should have timestamp and it's rare for duplicated links to exist at some given time.
+#### `dl.py`
+- Handles downloads of _SEC filings_, based on references sourced from the master index archive. 
 
-*** Finally, if you find this repo useful, please give it a STAR ***
+#### `parse_cusip_html.py`
+- Extracts CIK-CUSIP pairs (mappings) from the SEC filings by scraping their HTML-like stucture.
+
+#### `post_proc.py`
+- Performs light data cleaning and pruning of CIK-CUSIP mappings. Exports as CSV and JSON.
+
+## Workflow
+1) Set parameters in `main_parameters.py`
+2) Execute `main.py` which will:
+  - Download data using `dl_idx.py` (master index) and `dl.py` (SEC filings, type 13D and 13G)
+  - Parse CIK-CUSIP mappings with `parse_cusip_html.py` from SEC filings
+  - Lightly prune mappings results using `post_proc.py`
+
+### Dependencies
+- pathlib's Path  # For handling and manipulating filesystem paths
+- re  # For regular expressions, useful in pattern matching and text processing
+- time  # For time-related functions such as sleeping or measuring durations
+- datetime  # For handling dates and times
+- csv  # For reading from and writing to CSV files
+- requests  # For making HTTP requests, useful for downloading data from the web
+- collections  # For specialized container datatypes (e.g., namedtuple, deque)
+- multiprocessing's Pool  # For parallel processing using multiple processes
+- pandas  # For data manipulation and analysis
+
+MIT License
+Copyright (c) [2024] [@flatly1140]
+
