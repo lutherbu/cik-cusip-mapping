@@ -57,3 +57,7 @@ FILINGS_DIRECTORIES = [DATA_DIRECTORY / f"{x}_filings" for x in FILING_TYPES]  #
 # Helper filepaths for processing the EDGAR's MASTER INDEX OF SEC FILINGS
 MASTER_INDEX_FILE       = DATA_DIRECTORY / "master_index_1_raw.idx"             # concatenated historical archive (write: dl_idx.py)
 FILTERED_INDEX_FILE     = DATA_DIRECTORY / "master_index_2_filtered.csv"        # historical archive, filtered for chosen filing types (write: dl_idx.py, read: dl2.py)
+
+# Consolidated mapping file for selected filing types 
+FINAL_OUTPUT_CSV = DATA_DIRECTORY / 'cik-cusip-maps.csv'    # (write: post_proc.py)
+FINAL_OUTPUT_JSON = DATA_DIRECTORY / 'cik-cusip-maps.json'  # (write: post_proc.py)
