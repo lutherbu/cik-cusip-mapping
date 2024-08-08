@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+dl_idx.py
 
-import time
-import datetime
-import csv
-import re
-import requests
+This module is responsible for downloading master index data; weblinked references archived SEC filings.
+It handles the communication with the SEC's EDGAR system, retrieves the reference data, and stores
+it locally for further processing. The filtered output is a subset (e.g. only 13D and 13G filings) of
+the full (master) index file.
+
+"""
+import csv          # For reading from and writing to CSV files
+import re           # For regular expressions, useful in pattern matching and text processing
+import time         # For time-related functions such as sleeping or measuring durations
+import datetime     # For handling dates and times
+import requests     # For making HTTP requests, useful for downloading data from the web
 
 from main_parameters import(
     EDGAR_USER_AGENT,
@@ -31,7 +39,7 @@ def download_master_index_of_filings():
 
         for year in range(START_YEAR, current_year+1):      # <-- test period. Widest should be (1994, current_year+1)
             start_qrt = START_QUARTER if year == START_YEAR else 1
-            for quarter in range(start_qrt, 5):           # <-- test period. Otherwise range(1, 5)
+            for quarter in range(start_qrt, 4+1):           # <-- test period. Otherwise range(1, 4+1)
                 print(year, quarter)
 
                 current_time = time.time()

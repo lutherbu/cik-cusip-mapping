@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+main.py
 
+This is the main entry point of the program. It orchestrates the execution of various 
+tasks by utilizing different modules such as downloading master index data from the SEC,
+filtering the index for weblinks to 13D and 13F filings, parsing those filings to extract
+a mapping between CIK and CUSIP, and post-processing that data.
+
+Usage:
+    Run this script directly to start the program.
+"""
 import dl_idx
 import dl
 import parse_cusip_html
@@ -8,7 +18,7 @@ import post_proc
 
 def main():
 
-    dl_idx.download_master_index_of_filings()           # Download master index of SEC filings from the EDGAR system (~2GB archive for full history)
+    dl_idx.download_master_index_of_filings()           # Download master index of SEC filings from the EDGAR system
     dl_idx.filter_master_index_of_filings()             # Filter master index of SEC filings for selected filing types
 
     dl.download_indexed_filing_types()                  # Download SEC filings based on urls sourced the master index archive

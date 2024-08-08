@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+main_parameters.py
 
-from pathlib import Path
-import re
+This module contains the main parameters required for the execution of the program. 
+It serves as a configuration file where various constants and parameters are defined 
+to be used across different modules.
+
+NOTE:
+With an original objective to find unique CIK-CUSIP pairs for common stock issuances,
+we filter for 13D and 13G filings only. There are over 300 types of SEC filings of which
+8 filings match type '13D' and '13G'.
+
+This was taken as given without need for other issuances.
+
+Hence, the starting point is SEC filings filtered for 13D and 13G.
+
+"""
+from pathlib import Path    # For handling and manipulating filesystem paths
+import re                   # For regular expressions, useful in pattern matching and text processing
 
 #########################
 #### USER PARAMETERS ####
 #########################
 # USER CHOICE: SEC filing types
-FILING_TYPES = ["13D", "13G"]       # SEC filing types for common stock
+FILING_TYPES = ["13D", "13G"]               # SEC filing types for common stock
 
 # Initial calendar quarter for downloads of master-filings-index and filings
 START_YEAR, START_QUARTER = (2024, 3)       # can be as early as (1994, 1)

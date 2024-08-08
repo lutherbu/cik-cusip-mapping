@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+dl.py
 
-import time
-import csv
-from pathlib import Path
-import requests
+This module downloads an explicit list of SEC filings, sourced from the master
+index reference data.
+
+"""
+from pathlib import Path    # For handling and manipulating filesystem paths
+import csv                  # For reading from and writing to CSV files
+import time                 # For time-related functions such as sleeping or measuring durations
+import requests             # For making HTTP requests, useful for downloading data from the web
 
 
 from main_parameters import(
@@ -19,25 +25,25 @@ def download_indexed_filing_types():
 
     for idx, filing_type in enumerate(FILING_TYPES):
 
-        BASE_DIRECTORY = Path(FILINGS_DIRECTORIES[idx])
+        base_directory = Path(FILINGS_DIRECTORIES[idx])
 
-        to_dl = []
-        # Read MASTER INDEX FILE (choose formatted or filtered)
+        download_filings_list = []
+        # Read MASTER INDEX FILE 
         with FILTERED_INDEX_FILE.open(mode="r") as file:
             reader = csv.DictReader(file)
             for row in reader:
                 if filing_type in row["form"]:
-                    to_dl.append(row)
+                    download_filings_list.append(row)
 
-        len_ = len(to_dl)
-        print(len_)
+        num_filings = len(download_filings_list)
+        print(num_filings)
         print("Begin download of SEC filings...")
 
         # simple time-checks to respect the SEC's required rate-limit of 10 requests per second
         last_check_time = time.time()
 
-        for n, row in enumerate(to_dl):
-            print(f"{n} out of {len_}")
+        for n, row in enumerate(download_filings_list):
+            print(f"{n} out of {num_filings}")
 
             cik = row["cik"].strip()
             date = row["date"].strip()
@@ -47,12 +53,12 @@ def download_indexed_filing_types():
             accession = filename.split(".")[0].split("-")[-1]      # accession number -> unique document identifier...
 
             # Create download folder
-            DOWNLOAD_DIRECTORY = BASE_DIRECTORY / f"{year}_{month}"
-            DOWNLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
+            download_directory = base_directory / f"{year}_{month}"
+            download_directory.mkdir(parents=True, exist_ok=True)
 
-            DOWNLOAD_FILE = DOWNLOAD_DIRECTORY / f"{cik}_{date}_{accession}.txt"
+            FILING_DOCUMENT = download_directory / f"{cik}_{date}_{accession}.txt"
 
-            if DOWNLOAD_FILE.exists():
+            if FILING_DOCUMENT.exists():
                 continue
 
             try:
@@ -68,7 +74,7 @@ def download_indexed_filing_types():
 
                 last_check_time = time.time()
 
-                with DOWNLOAD_FILE.open(mode="w", errors="ignore") as file:
+                with FILING_DOCUMENT.open(mode="w", errors="ignore") as file:
                     file.write(txt)
             except:
                 print(f"{cik}, {date} failed to download")

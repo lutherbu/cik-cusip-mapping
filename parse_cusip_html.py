@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+parse_cusip_html.py
 
-import csv
-from collections import *
-from multiprocessing import Pool
+This module parses through HTML-like filings documents to extract CIKs and CUSIPs. 
+It processes the HTML structure, extracts relevant data, and prepares it for further 
+processing or storage.
+
+TODO: vet the parsing-logic
+
+"""
+import csv                          # For reading from and writing to CSV files
+from multiprocessing import Pool    # For parallel processing using multiple processes
+from collections import *           # For specialized container datatypes (e.g., namedtuple, deque)
 
 from main_parameters import(
     FILING_TYPES,
     DATA_DIRECTORY,
-    html_tag_rx, html_junk_rx, cusip_rx, wordchar_rx,
+    html_tag_rx, html_junk_rx, cusip_rx, wordchar_rx,   # RegEx patterns to facilitate scrapes
 )
 
 

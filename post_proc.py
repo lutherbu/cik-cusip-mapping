@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+post_proc.py
 
-import pandas as pd
+This module handles post-processing of the filings documents. It includes light cleaning and
+transforming of the intermediate, parsed filings data.
+
+Exports CIK-CUSIP8 (defaults to CUSIP6 when CUSIP8 not found)
+"""
+import pandas as pd         # For data manipulation and analysis
 
 from main_parameters import(
     DATA_DIRECTORY,
@@ -32,10 +39,10 @@ def consolidate_and_clean_cik_cusip_map(cik_cusip_maps=cik_cusip_maps_by_type):
     df.drop_duplicates().reset_index(drop=True, inplace=True)
 
     # Write-out to CSV
-    df[['cik', 'cusip6', 'cusip8']].to_csv(FINAL_OUTPUT_CSV, index=False)
+    df[['cik', 'cusip8']].to_csv(FINAL_OUTPUT_CSV, index=False)
 
     # Write-out to JSON
-    df[['cik', 'cusip6', 'cusip8']].to_json(FINAL_OUTPUT_JSON)
+    df[['cik', 'cusip8']].to_json(FINAL_OUTPUT_JSON)
 
 
 if __name__ == "__main__":
