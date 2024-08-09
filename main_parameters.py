@@ -29,6 +29,9 @@ FILING_TYPES = ["13D", "13G"]               # SEC filing types for common stock
 # Initial calendar quarter for downloads of master-filings-index and filings
 START_YEAR, START_QUARTER = (2024, 3)       # can be as early as (1994, 1)
 
+# Batch size for downloading SEC filings
+MAX_THREADS = 20    # Adjust based on your system's capabilities
+
 ############################
 #### SOURCE INFORMATION ####
 ############################
@@ -56,8 +59,10 @@ SEC_RATE_LIMIT = 10
 html_tag_rx     = re.compile(r'<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 html_junk_rx    = re.compile(r'''["].*["]|=#.*\d+''')
 wordchar_rx     = re.compile(r'\w+')
-cusip_rx        = re.compile(r'[\( >]*[0-9A-Z]{1}[0-9]{3}[0-9A-Za-z]{2}[- ]*[0-9]{0,2}[- ]*[0-9]{0,1}[\) \n<]*')
-
+# cusip_rx        = re.compile(r'[\( >]*[0-9A-Z]{1}[0-9]{3}[0-9A-Za-z]{2}[- ]*[0-9]{0,2}[- ]*[0-9]{0,1}[\) \n<]*')
+cusip_rx = re.compile(
+    r'(?:^|(?<=[^0-9A-Z]))[\( >]*([0-9A-Z]{1}[- ]*[0-9]{1}[- ]*[0-9]{1}[- ]*[0-9]{1}[- ]*[0-9A-Z]{1}[- ]*[0-9A-Z]{1}[- ]*[0-9]{0,2}[- ]*[0-9]{0,1})[\) \n<]*(?=$|[^0-9A-Z])'
+    )
 #################################
 #### DESTINATION INFORMATION ####
 #################################
