@@ -14,7 +14,7 @@ from typing import List
 
 from utils_internet import EfficientDownloader
 
-from main_parameters import (
+from main_parameters import(
     SEC_USER_AGENT,
     SEC_FILINGS_URL,
     SEC_RATE_LIMIT,
