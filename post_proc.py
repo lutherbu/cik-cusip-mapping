@@ -11,12 +11,12 @@ Exports CIK-CUSIP8 (defaults to CUSIP6 when CUSIP8 not found)
 import pandas as pd         # For data manipulation and analysis
 
 from main_parameters import(
-    DATA_DIRECTORY,
+    DATA_FOLDER,
     FINAL_OUTPUT_CSV, FINAL_OUTPUT_JSON,
 )
 
 # Grab list of intermediate cik-cusip maps (one for each filing type)
-cik_cusip_maps_by_type = DATA_DIRECTORY.glob(f"*-cik-cusip.csv")
+cik_cusip_maps_by_type = DATA_FOLDER.glob(f"*-cik-cusip.csv")
 
 def consolidate_and_clean_cik_cusip_map(cik_cusip_maps=cik_cusip_maps_by_type):
 

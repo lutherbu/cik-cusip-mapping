@@ -16,7 +16,7 @@ from collections import *           # For specialized container datatypes (e.g.,
 
 from main_parameters import(
     FILING_TYPES,
-    DATA_DIRECTORY,
+    DATA_FOLDER,
     html_tag_rx, html_junk_rx, cusip_rx, wordchar_rx,   # RegEx patterns to facilitate scrapes
 )
 
@@ -65,10 +65,10 @@ def parse_filing_type(file):
 def parse_filings_type_list():
 
     for filing_type in FILING_TYPES:
-        output_file = DATA_DIRECTORY / f"{filing_type}-cik-cusip.csv"           # intermediate mappings by filing type
+        output_file = DATA_FOLDER / f"{filing_type}-cik-cusip.csv"           # intermediate mappings by filing type
 
         # Get filepaths of downloaded filings
-        filings_list = DATA_DIRECTORY.glob(f"{filing_type}_filings/*/*.txt")
+        filings_list = DATA_FOLDER.glob(f"{filing_type}_filings/*/*.txt")
 
         with Pool(30) as p:
             with output_file.open('w') as w:

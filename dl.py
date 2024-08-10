@@ -17,7 +17,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from main_parameters import(
-    EDGAR_USER_AGENT,
+    SEC_USER_AGENT,
     SEC_FILINGS_URL,
     SEC_RATE_LIMIT, MAX_THREADS,
     FILING_TYPES, FILINGS_DIRECTORIES,
@@ -65,7 +65,7 @@ def download_file(row, base_directory):
     try:
         response = requests.get(
             SEC_FILINGS_URL.format(filename=filename),
-            headers=EDGAR_USER_AGENT,
+            headers=SEC_USER_AGENT,
             timeout=5.0
         )
         if response.status_code == 200:
