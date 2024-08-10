@@ -83,7 +83,7 @@ class EfficientDownloader:
         for thread in threads:
             thread.join()
 
-
+    # # This is an asynchronous alternative
     # def download_all(self):
     #     """
     #     Download and process all files in the URL list.
@@ -234,38 +234,23 @@ class EfficientDownloader:
 if __name__ == "__main__":
     from main_parameters import(
         SEC_USER_AGENT,
-        sec_master_url_template, SEC_RATE_LIMIT,
-        START_YEAR, START_QUARTER,
+        SEC_MASTER_URLS, SEC_RATE_LIMIT,
     )
 
-    # START_YEAR, START_QUARTER = (2023, 1)
-    current_year = datetime.now().year
-    current_month = datetime.now().month
-    current_quarter = (current_month - 1) // 3 + 1
-
-    sec_master_urls = []
-    for year in range(START_YEAR, current_year+1):      # <-- test period. Widest should be (1994, current_year+1)
-            start_qrt = START_QUARTER if year == START_YEAR else 1
-            for quarter in range(start_qrt, 4+1):           # <-- test period. Otherwise range(1, 4+1)
-                if (year == current_year and quarter > current_quarter) or (year > current_year):
-                    break
-                sec_master_urls.append(sec_master_url_template.format(year=year, quarter=quarter))
-
-
-    def sample_processor(content: bytes) -> bytes:
+    def example_processor(content: bytes) -> bytes:
         # This is a placeholder processor function
         return content.upper()
 
     DATA_RAW_FOLDER = Path("temp_downloads")
     MASTER_INDEX_PREFIX = "master_index"
 
-    downloader = EfficientDownloader(
-        urls=sec_master_urls,
+    sec_index_downloader = EfficientDownloader(
+        urls=SEC_MASTER_URLS,
         user_agent=SEC_USER_AGENT,
         rate_limit=SEC_RATE_LIMIT,
         download_dir=DATA_RAW_FOLDER,
         archive_prefix=MASTER_INDEX_PREFIX,
-        # process_func=sample_processor,
+        # process_func=example_processor,
     )
 
-    downloader.download_and_process()
+    sec_index_downloader.download_and_process()
