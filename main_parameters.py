@@ -17,8 +17,9 @@ This was taken as given without need for other issuances.
 Hence, the starting point is SEC filings filtered for 13D and 13G.
 
 """
-from pathlib import Path    # For handling and manipulating filesystem paths
-import re                   # For regular expressions, useful in pattern matching and text processing
+from pathlib import Path        # For handling and manipulating filesystem paths
+import re                       # For regular expressions, useful in pattern matching and text processing
+from datetime import datetime   # For handling dates and times
 
 #########################
 #### USER PARAMETERS ####
@@ -27,7 +28,7 @@ import re                   # For regular expressions, useful in pattern matchin
 FILING_TYPES = ["13D", "13G"]               # SEC filing types for common stock
 
 # Initial calendar quarter for downloads of master-filings-index and filings
-START_YEAR, START_QUARTER = (2024, 3)       # can be as early as (1994, 1)
+START_YEAR, START_QUARTER = (2023, 3)       # can be as early as (1994, 1)
 
 # Batch size for downloading SEC filings
 MAX_THREADS = 20    # Adjust based on your system's capabilities
@@ -35,14 +36,14 @@ MAX_THREADS = 20    # Adjust based on your system's capabilities
 ############################
 #### SOURCE INFORMATION ####
 ############################
-EDGAR_USER_AGENT = {
+SEC_USER_AGENT = {
     'User-Agent': 'ACME Co jane.smith@acme.co',         # <-- Your info here. Required by SEC's EDGAR system
     'Accept-Encoding': 'deflate',
     'Host': 'www.sec.gov'
 }
 
 # URL template for quarterly master index archives
-SEC_MASTER_URL = """https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{quarter}/master.idx"""     # dl_idx.py
+sec_master_url_template = """https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{quarter}/master.idx"""     # dl_idx.py
 # SEC_MASTER_URL.format(year=2024, quarter=3)
 
 # URL template for SEC filings, where filename has the format CIK/
@@ -69,16 +70,37 @@ cusip_rx = re.compile(
 # Get the directory where the current script is located
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-DATA_DIRECTORY = SCRIPT_DIR / "data_dir"
-DATA_DIRECTORY.mkdir(parents=True, exist_ok=True)
+DATA_FOLDER = SCRIPT_DIR / "data_dir"
+DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+
+DATA_RAW_FOLDER     = DATA_FOLDER / "raw_downloads"
+DATA_PROC_FOLDER    = DATA_FOLDER / "processed"
+DATA_FINAL_FOLDER   = DATA_FOLDER / "final"
 
 # Processed filings will be saved subdirectories by filing type
-FILINGS_DIRECTORIES = [DATA_DIRECTORY / f"{x}_filings" for x in FILING_TYPES]  # e.g. ['13D_filings', '13G_filings', ...]
+FILINGS_DIRECTORIES = [DATA_FOLDER / f"{x}_filings" for x in FILING_TYPES]  # e.g. ['13D_filings', '13G_filings', ...]
 
 # Helper filepaths for processing the EDGAR's MASTER INDEX OF SEC FILINGS
-MASTER_INDEX_FILE       = DATA_DIRECTORY / "master_index_1_raw.idx"             # concatenated historical archive (write: dl_idx.py)
-FILTERED_INDEX_FILE     = DATA_DIRECTORY / "master_index_2_filtered.csv"        # historical archive, filtered for chosen filing types (write: dl_idx.py, read: dl2.py)
+MASTER_INDEX_PREFIX     = "master_index"  #"master_index_1_raw.idx"  # historical archive tarball (write: dl_idx.py)
+FILTERED_INDEX_FILE     = DATA_PROC_FOLDER / "master_index_filtered.csv"        # historical archive, filtered for chosen filing types (write: dl_idx.py, read: dl2.py)
 
 # Consolidated mapping file for selected filing types 
-FINAL_OUTPUT_CSV = DATA_DIRECTORY / 'cik-cusip-maps.csv'    # (write: post_proc.py)
-FINAL_OUTPUT_JSON = DATA_DIRECTORY / 'cik-cusip-maps.json'  # (write: post_proc.py)
+FINAL_OUTPUT_CSV = DATA_FOLDER / 'cik-cusip-maps.csv'    # (write: post_proc.py)
+FINAL_OUTPUT_JSON = DATA_FOLDER / 'cik-cusip-maps.json'  # (write: post_proc.py)
+
+
+###############################################################
+###### HELPER ROUTINE TO BUILD LIST OF URLS TO DOWNLOAD #######
+###############################################################
+
+current_year = datetime.now().year
+current_month = datetime.now().month
+current_quarter = (current_month - 1) // 3 + 1
+
+SEC_MASTER_URLS = []
+for year in range(START_YEAR, current_year+1):      # <-- test period. Widest should be (1994, current_year+1)
+        start_qrt = START_QUARTER if year == START_YEAR else 1
+        for quarter in range(start_qrt, 4+1):           # <-- test period. Otherwise range(1, 4+1)
+            if (year == current_year and quarter > current_quarter) or (year > current_year):
+                break
+            SEC_MASTER_URLS.append(sec_master_url_template.format(year=year, quarter=quarter))

@@ -11,71 +11,96 @@ the full (master) index file.
 """
 import csv          # For reading from and writing to CSV files
 import re           # For regular expressions, useful in pattern matching and text processing
-import time         # For time-related functions such as sleeping or measuring durations
-import datetime     # For handling dates and times
-import requests     # For making HTTP requests, useful for downloading data from the web
+import tarfile
+
+from utils_internet import EfficientDownloader
 
 from main_parameters import(
-    EDGAR_USER_AGENT,
-    SEC_MASTER_URL, SEC_RATE_LIMIT,
+    SEC_USER_AGENT,
+    SEC_RATE_LIMIT,
+    SEC_MASTER_URLS,
 
-    FILING_TYPES, MASTER_INDEX_FILE, FILTERED_INDEX_FILE,
+    FILING_TYPES, MASTER_INDEX_PREFIX, FILTERED_INDEX_FILE,
 
-    START_YEAR, START_QUARTER,
+    DATA_RAW_FOLDER,
+    FILTERED_INDEX_FILE,
 )
 
-current_year = datetime.datetime.now().year
-current_month = datetime.datetime.now().month
-current_quarter = (current_month - 1) // 3 + 1
 
+"A class for efficiently downloading and processing a large number of files from a single site."
+downloader = EfficientDownloader(
+    urls=SEC_MASTER_URLS,
+    user_agent=SEC_USER_AGENT,
+    rate_limit=SEC_RATE_LIMIT,
+    download_dir=DATA_RAW_FOLDER,
+    archive_prefix=MASTER_INDEX_PREFIX,
+    # process_func=sample_processor,
+)
 
 def download_master_index_of_filings():
+    downloader.download_and_process()
 
-    # save MASTER INDEX FILE
-    with MASTER_INDEX_FILE.open("wb") as idxfile:
 
-        # time-checks to respect the SEC's required rate-limit of 10 requests per second
-        last_check_time = time.time()
+def apply_pattern_to_lines(pattern, lines):
+    """
+    Filters lines based on a regular expression pattern.
+    Args:
+        pattern (re.Pattern): Compiled regular expression pattern to match against.
+        lines (iterator): An iterator yielding lines from a file.
+    Yields:
+        list: Fields from each line that matches the pattern.
+    """
+    for line in lines:
+        if ".txt" in line:
+            fields = line.strip().split("|")
+            if len(fields) > 2 and pattern.search(fields[2]):
+                yield fields
 
-        for year in range(START_YEAR, current_year+1):      # <-- test period. Widest should be (1994, current_year+1)
-            start_qrt = START_QUARTER if year == START_YEAR else 1
-            for quarter in range(start_qrt, 4+1):           # <-- test period. Otherwise range(1, 4+1)
-                print(year, quarter)
+def process_tarfile(tar_path, line_processor):
+    """
+    Processes files within a tar.gz archive and applies a line processor function.
+    Args:
+        tar_path (Path): Path to the tar.gz archive.
+        line_processor (function): Function to apply to each line in the extracted files.
+    Yields:
+        generator: Yields processed lines from the tar.gz archive.
+    """
+    with tarfile.open(tar_path, "r:gz") as tar:
+        for member in tar.getmembers():
+            with tar.extractfile(member) as file_obj:
+                lines = (line.decode('latin1') for line in file_obj)
+                yield from line_processor(lines)
 
-                current_time = time.time()
-                while (current_time - last_check_time) < 1/SEC_RATE_LIMIT:  # respect the SEC rate limit
-                    current_time = time.time()
-                    pass
-
-                if (year == current_year and quarter > current_quarter) or (year > current_year):
-                    break
-
-                content = requests.get(
-                    SEC_MASTER_URL.format(year=year, quarter=quarter),
-                    headers=EDGAR_USER_AGENT,
-                ).content
-
-                last_check_time = time.time()
-                
-                idxfile.write(content)
-
+def write_csv(output_file, headers, data_generator):
+    """
+    Writes filtered data to a CSV file.
+    Args:
+        output_file (Path): Path to the output CSV file.
+        headers (list): List of column headers for the CSV file.
+        data_generator (iterator): An iterator yielding rows of data to write to the CSV file.
+    """
+    with output_file.open(mode="w", errors="ignore") as csvfile:
+        wr = csv.writer(csvfile)
+        wr.writerow(headers)
+        for row in data_generator:
+            wr.writerow(row)
 
 def filter_master_index_of_filings():
-    with FILTERED_INDEX_FILE.open(mode="w", errors="ignore") as csvfile:
-        wr = csv.writer(csvfile)
-        wr.writerow(["cik", "comnam", "form", "date", "filename"])
+    """
+    Filters the master index of filings by applying a pattern to select specific filing types.
 
-        # RegEx pattern to select for all partial-matches of the "form" field with selected filing types
-        pattern = re.compile("|".join(FILING_TYPES), re.IGNORECASE)
+    This function extracts files from a tar.gz archive, decodes the lines, filters them based on 
+    specified filing types, and writes the filtered data to a CSV file.
+    """
+    master_index_archive = (DATA_RAW_FOLDER / MASTER_INDEX_PREFIX).with_suffix(".tar.gz")
+    pattern = re.compile("|".join(FILING_TYPES), re.IGNORECASE)
+    headers = ["cik", "comnam", "form", "date", "filename"]
 
-        with MASTER_INDEX_FILE.open(mode="r", encoding="latin1") as idxfile:
-            for this_row in idxfile:
+    filtered_data = process_tarfile(master_index_archive, lambda lines: apply_pattern_to_lines(pattern, lines))
 
-                if ".txt" in this_row:
-                    fields = this_row.strip().split("|")
-
-                    if pattern.search(fields[2]):
-                        wr.writerow(fields)
+    # make sure the directory exists
+    FILTERED_INDEX_FILE.parent.mkdir(parents=True, exist_ok=True)
+    write_csv(FILTERED_INDEX_FILE, headers, filtered_data)
 
 
 if __name__ == "__main__":
