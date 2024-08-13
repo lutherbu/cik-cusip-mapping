@@ -21,6 +21,7 @@ from main_parameters import(
 )
 
 
+
 def parse_filing_type(file):
     with file.open('r') as f:
         raw = f.read().replace("<DOCUMENT>", "***BEGIN SEARCH HERE***")
@@ -38,17 +39,14 @@ def parse_filing_type(file):
     cusips = []
     record = 0
     for line in lines:
-
         if '***BEGIN SEARCH HERE***' in line:  # lines are after the document preamble
             record = 1
-
         if record == 1:
             line = html_junk_rx.sub('', line)
             line = html_tag_rx.sub('', line)
 
             if 'IRS' not in line and 'I.R.S' not in line:
                 fd = cusip_rx.findall(line)
-
                 if fd:
                     cusip = fd[0].strip().strip('<>')
                     cusips.append(cusip)

@@ -37,7 +37,7 @@ downloader = EfficientDownloader(
     # process_func=sample_processor,
 )
 
-def download_master_index_of_filings():
+def download_sec_index_of_filings():
     downloader.download_and_process()
 
 
@@ -85,7 +85,7 @@ def write_csv(output_file, headers, data_generator):
         for row in data_generator:
             wr.writerow(row)
 
-def filter_master_index_of_filings():
+def filter_sec_index_of_filings_to_csv():
     """
     Filters the master index of filings by applying a pattern to select specific filing types.
 
@@ -104,5 +104,5 @@ def filter_master_index_of_filings():
 
 
 if __name__ == "__main__":
-    download_master_index_of_filings()
-    filter_master_index_of_filings()
+    download_sec_index_of_filings()
+    filter_sec_index_of_filings_to_csv()

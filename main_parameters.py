@@ -28,10 +28,10 @@ from datetime import datetime   # For handling dates and times
 FILING_TYPES = ["13D", "13G"]               # SEC filing types for common stock
 
 # Initial calendar quarter for downloads of master-filings-index and filings
-START_YEAR, START_QUARTER = (2023, 3)       # can be as early as (1994, 1)
+START_YEAR, START_QUARTER = (2024, 2)       # can be as early as (1994, 1)
 
 # Batch size for downloading SEC filings
-MAX_THREADS = 20    # Adjust based on your system's capabilities
+# MAX_THREADS = 20    # Adjust based on your system's capabilities
 
 ############################
 #### SOURCE INFORMATION ####
@@ -78,7 +78,7 @@ DATA_PROC_FOLDER    = DATA_FOLDER / "processed"
 DATA_FINAL_FOLDER   = DATA_FOLDER / "final"
 
 # Processed filings will be saved subdirectories by filing type
-FILINGS_DIRECTORIES = [DATA_FOLDER / f"{x}_filings" for x in FILING_TYPES]  # e.g. ['13D_filings', '13G_filings', ...]
+FILINGS_DIRECTORIES = [DATA_RAW_FOLDER / f"{x}_filings" for x in FILING_TYPES]  # e.g. ['13D_filings', '13G_filings', ...]
 
 # Helper filepaths for processing the EDGAR's MASTER INDEX OF SEC FILINGS
 MASTER_INDEX_PREFIX     = "master_index"  #"master_index_1_raw.idx"  # historical archive tarball (write: dl_idx.py)
