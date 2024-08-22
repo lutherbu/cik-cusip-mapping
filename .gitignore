@@ -3,9 +3,9 @@
 __pycache__/
 .ipynb_checkpoints/
 .virtual_documents/
-*.parquet
 
 # Ignore all .gz, .csv and .txt files in all directories
+*.parquet
 *.json
 *.gz
 *.csv

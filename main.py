@@ -3,7 +3,7 @@
 """
 main.py
 
-This is the main entry point of the program. It orchestrates the execution of various 
+This is the main entry point of the program. It orchestrates the execution of various
 tasks by utilizing different modules such as downloading master index data from the SEC,
 filtering the index for weblinks to 13D and 13F filings, parsing those filings to extract
 a mapping between CIK and CUSIP, and post-processing that data.
@@ -24,9 +24,9 @@ def main():
 
     asyncio.run(download_indexed_filing_types())    # Download SEC filings based on urls sourced the master index archive
 
-    # parse_cusip_html.parse_filings_type_list()          # Parse SEC filings to create mapping between CIK and CUSIP for each filing type
+    parse_cusip_html.parse_filings_type_list()          # Parse SEC filings to create mapping between CIK and CUSIP for each filing type
 
-    # post_proc.consolidate_and_clean_cik_cusip_map()     # Consolidate and clean CIK-CUSIP
+    post_proc.consolidate_and_clean_cik_cusip_map()     # Consolidate and clean CIK-CUSIP
 
 if __name__ == '__main__':
     main()
