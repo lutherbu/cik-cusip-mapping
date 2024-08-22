@@ -17,9 +17,7 @@ This was taken as given without need for other issuances.
 Hence, the starting point is SEC filings filtered for 13D and 13G.
 
 """
-from pathlib import Path        # For handling and manipulating filesystem paths
-import re                       # For regular expressions, useful in pattern matching and text processing
-from datetime import datetime   # For handling dates and times
+
 from pathlib import Path        # For handling and manipulating filesystem paths
 import re                       # For regular expressions, useful in pattern matching and text processing
 from datetime import datetime   # For handling dates and times
@@ -39,7 +37,6 @@ START_YEAR, START_QUARTER = (2024, 1)       # can be as early as (1994, 1)
 ############################
 #### SOURCE INFORMATION ####
 ############################
-SEC_USER_AGENT = {
 SEC_USER_AGENT = {
     'User-Agent': 'ACME Co jane.smith@acme.co',         # <-- Your info here. Required by SEC's EDGAR system
     'Accept-Encoding': 'deflate',
