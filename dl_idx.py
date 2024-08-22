@@ -16,8 +16,6 @@ import tarfile
 from utils_internet import EfficientDownloader
 import tarfile
 
-from utils_internet import EfficientDownloader
-
 from main_parameters import(
     SEC_USER_AGENT,
     SEC_RATE_LIMIT,
