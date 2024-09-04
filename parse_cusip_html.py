@@ -21,7 +21,6 @@ from main_parameters import(
 )
 
 
-
 def parse_filing_type(file):
     with file.open('r') as f:
         raw = f.read().replace("<DOCUMENT>", "***BEGIN SEARCH HERE***")

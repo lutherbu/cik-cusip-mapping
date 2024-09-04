@@ -11,7 +11,6 @@ the full (master) index file.
 """
 import csv          # For reading from and writing to CSV files
 import re           # For regular expressions, useful in pattern matching and text processing
-import tarfile
 
 from utils_internet import EfficientDownloader
 import tarfile
@@ -20,17 +19,12 @@ from main_parameters import(
     SEC_USER_AGENT,
     SEC_RATE_LIMIT,
     SEC_MASTER_URLS,
-    SEC_USER_AGENT,
-    SEC_RATE_LIMIT,
-    SEC_MASTER_URLS,
 
-    FILING_TYPES, MASTER_INDEX_PREFIX, FILTERED_INDEX_FILE,
-    FILING_TYPES, MASTER_INDEX_PREFIX, FILTERED_INDEX_FILE,
+    FILING_TYPES, 
+    MASTER_INDEX_PREFIX, 
+    FILTERED_INDEX_FILE,
 
     DATA_RAW_FOLDER,
-    FILTERED_INDEX_FILE,
-    DATA_RAW_FOLDER,
-    FILTERED_INDEX_FILE,
 )
 
 

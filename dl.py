@@ -16,8 +16,9 @@ from utils_internet import EfficientDownloader
 
 from main_parameters import(
     SEC_USER_AGENT,
-    SEC_FILINGS_URL,
     SEC_RATE_LIMIT,
+    SEC_FILINGS_URL,
+    
     FILING_TYPES,
     FILINGS_DIRECTORIES,
     FILTERED_INDEX_FILE,
